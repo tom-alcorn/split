@@ -8,9 +8,9 @@ module Split
 
         alternative = if Split.configuration.enabled
           experiment.save
-          force_control = kwargs[:force_control] ||= false
+          kwargs[:force_control] ||= false
           trial = Trial.new(:user => ab_user, :experiment => experiment,
-              :override => override_alternative(experiment.name), :exclude => exclude_visitor?,
+              :override => override_alternative(experiment.name), :exclude => exclude_visitor?(kwargs[:force_control]),
               :disabled => split_generically_disabled?)
           alt = trial.choose!(self)
           alt ? alt.name : nil
@@ -97,7 +97,7 @@ module Split
       @ab_user ||= Split::Persistence.adapter.new(self)
     end
 
-    def exclude_visitor?
+    def exclude_visitor?(force_control = false)
       instance_eval(&Split.configuration.ignore_filter) || is_ignored_ip_address? || is_robot? || force_control
     end
 
